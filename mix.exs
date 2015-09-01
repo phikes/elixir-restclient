@@ -6,6 +6,7 @@ defmodule RestClient.Mixfile do
      version: "0.0.1",
      description: "RestClient is a generic REST client library. It generates structs and functions
 for use with APIs. ",
+     links: %{"GitHub" => "https://github.com/phikes/elixir-restclient"},
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
