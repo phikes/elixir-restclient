@@ -5,7 +5,23 @@ RestClient is a generic REST client library. It generates structs and functions
 for use with APIs. I currently use it for interfacing the
 [Paymill](https://developers.paymill.com/API) API from Elixir.
 
-# Example
+# Setup
+ Add RestClient and ibrowse as dependencies in your `mix.exs`:
+
+    defp deps do
+      [
+        {:rest_client, "~> 0.0.1"},
+        {:ibrowse, github: "cmullaparthi/ibrowse", tag: "v4.1.2"}
+      ]
+    end
+
+Add RestClient as application in your `mix.exs`:
+
+    def application do
+      [applications: [:logger, :rest_client]]
+    end
+
+# Example Usage
     defmodule Test do
         api "http://test.com"
     end
