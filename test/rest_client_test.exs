@@ -19,7 +19,7 @@ defmodule RestClientTest do
   setup do
     {
       :ok,
-      response: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"}
+      index: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"}
     }
   end
 
@@ -31,7 +31,7 @@ defmodule RestClientTest do
     assert Test.User.path == "users"
   end
 
-  test "index/1 makes the correct GET request", %{response: response} do
+  test "index/1 makes the correct GET request", %{index: response} do
     with_mock HTTPotion, [get: fn(_, _) -> response end] do
       Test.User.index {"user", "pass"}
 
@@ -40,13 +40,34 @@ defmodule RestClientTest do
     end
   end
 
-  test "index/1 decodes the data correctly", %{response: response} do
+  test "index/1 decodes the data correctly", %{index: response} do
     with_mock HTTPotion, [get: fn(_, _) -> response end] do
       assert Test.User.index({"user", "pass"}) == [%Test.User{
         id: "1",
         email: "demo@test.com",
         username: "Testkunde"
       }]
+    end
+  end
+
+  test "delete/2 makes the correct DELETE request" do
+    with_mock HTTPotion, [delete: fn(_, _) -> %{status_code: 200} end] do
+      Test.User.delete {"user", "pass"}, "1"
+
+      assert called HTTPotion.delete("http://test.com/users/1",
+        basic_auth: {"user", "pass"})
+    end
+  end
+
+  test "delete/2 signals success" do
+    with_mock HTTPotion, [delete: fn(_, _) -> %{status_code: 200} end] do
+      assert Test.User.delete({"user", "pass"}, "1")
+    end
+  end
+
+  test "delete/2 signals failure" do
+    with_mock HTTPotion, [delete: fn(_, _) -> %{status_code: 404} end] do
+      assert !Test.User.delete({"user", "pass"}, "1")
     end
   end
 end

@@ -45,6 +45,31 @@ defmodule RestClient do
       defstruct unquote(fields)
 
       @doc """
+        Deletes a record of the resource via a HTTP DELETE request to
+        http://apiurl.com/resources/id. The response is expected to return a
+        status code if 200, otherwise the method returns false.
+
+        # Examples
+
+            defmodule Test do
+                api "http://test.com"
+            end
+
+            def Test.User do
+              resource Test, [:id, :username, :email]
+            end
+
+        `Test.User.delete {"something", "pass123"}, "1"` will
+        issue a HTTP DELETE request to `http://test.com/users/1`. Say that
+        request returns a status code of 200. Then `Test.User.delete/2` will
+        return true.
+      """
+      def delete(auth, id) do
+        200 == HTTPotion.delete("#{unquote(api).url}/#{path}/#{id}",
+          basic_auth: auth).status_code
+      end
+
+      @doc """
         Retrieves all records of the resource via a HTTP GET request to
         http://apiurl.com/resources. The response is expected to be in JSON
         and the default key is "data".
