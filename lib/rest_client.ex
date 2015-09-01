@@ -45,6 +45,43 @@ defmodule RestClient do
       defstruct unquote(fields)
 
       @doc """
+        Retrieves a record of the resource via a HTTP GET request to
+        http://apiurl.com/resources/id. The response is expected to be in JSON
+        and the default key is "data".
+
+        # Examples
+
+            defmodule Test do
+                api "http://test.com"
+            end
+
+            def Test.User do
+              resource Test, [:id, :username, :email]
+            end
+
+        `Test.User.show {"something", "pass123"}, "1"` will
+        issue a HTTP GET request to `http://test.com/users/1`. Say that request
+        returns
+
+            {
+              data: {
+                id: 1,
+                username: "Peter Pan",
+                email: "peter@pan123.com"
+              }
+            }
+
+        `Test.User.show/2` will return a `%Test.User` struct according to that
+        data.
+      """
+      def show(auth, id) do
+        HTTPotion.get("#{unquote(api).url}/#{path}/#{id}",
+          basic_auth: auth).body
+          |> Poison.decode!(as: %{"data" => __MODULE__})
+          |> Map.get("data")
+      end
+
+      @doc """
         Creates a new record of the resource via a HTTP POST request to
         http://apiurl.com/resources. The response is expected to be in JSON
         and the default key is "data".

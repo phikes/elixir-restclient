@@ -20,7 +20,8 @@ defmodule RestClientTest do
     {
       :ok,
       index: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"},
-      create: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"}
+      create: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"},
+      show: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"}
     }
   end
 
@@ -91,6 +92,25 @@ defmodule RestClientTest do
       assert Test.User.create({"user", "pass"}, %Test.User{ email: "abc@def.com",
         username: "harald" }) == %Test.User{ email: "abc@def.com",
         username: "harald", id: "1" }
+    end
+  end
+
+  test "show/2 makes the correct GET request", %{show: response} do
+    with_mock HTTPotion, [get: fn(_, _) -> response end] do
+      Test.User.show {"user", "pass"}, "1"
+
+      assert called HTTPotion.get("http://test.com/users/1",
+        basic_auth: {"user", "pass"})
+    end
+  end
+
+  test "show/2 returns the correct record", %{show: response} do
+    with_mock HTTPotion, [get: fn(_, _) -> response end] do
+      assert Test.User.show({"user", "pass"}, "1") == %Test.User{
+        id: "1",
+        username: "harald",
+        email: "abc@def.com"
+      }
     end
   end
 end
