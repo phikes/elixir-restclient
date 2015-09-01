@@ -4,6 +4,8 @@ defmodule RestClient.Mixfile do
   def project do
     [app: :rest_client,
      version: "0.0.1",
+     description: "RestClient is a generic REST client library. It generates structs and functions
+for use with APIs. ",
      elixir: "~> 1.0",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
