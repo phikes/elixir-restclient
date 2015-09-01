@@ -1,0 +1,6 @@
+%{"httpotion": {:hex, :httpotion, "2.1.0"},
+  "ibrowse": {:git, "git://github.com/cmullaparthi/ibrowse.git", "ea3305d21f37eced4fac290f64b068e56df7de80", [tag: "v4.1.2"]},
+  "inflex": {:hex, :inflex, "1.4.1"},
+  "meck": {:hex, :meck, "0.8.3"},
+  "mock": {:hex, :mock, "0.1.1"},
+  "poison": {:hex, :poison, "1.5.0"}}
