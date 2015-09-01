@@ -13,7 +13,12 @@ defmodule RestClient do
           resource Test, [:id, :username, :email]
         end
 
-    This will give you the following function: `Test.User.index/1`.
+    This will give you the following functions:
+      * `Test.User.index/1`
+      * `Test.User.update/3`
+      * `Test.User.show/2`
+      * `Test.User.create/2`
+      * `Test.User.delete/2`
 
     The first parameter is used to pass in authentication (currently we assume
     http basic authentication), e.g.
