@@ -19,7 +19,8 @@ defmodule RestClientTest do
   setup do
     {
       :ok,
-      index: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"}
+      index: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"},
+      create: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"}
     }
   end
 
@@ -68,6 +69,28 @@ defmodule RestClientTest do
   test "delete/2 signals failure" do
     with_mock HTTPotion, [delete: fn(_, _) -> %{status_code: 404} end] do
       assert !Test.User.delete({"user", "pass"}, "1")
+    end
+  end
+
+  test "create/2 makes the correct POST request", %{create: response} do
+    with_mock HTTPotion, [post: fn(_, _) -> response end] do
+      Test.User.create {"user", "pass"}, %Test.User{ email: "abc@def.com",
+        username: "harald" }
+
+      assert called HTTPotion.post("http://test.com/users",
+        basic_auth: {"user", "pass"},
+        body: "email=abc@def.com&username=harald",
+        headers: [
+            "Content-type": "application/x-www-form-urlencoded"
+          ])
+    end
+  end
+
+  test "create/2 returns the created record", %{create: response} do
+    with_mock HTTPotion, [post: fn(_, _) -> response end] do
+      assert Test.User.create({"user", "pass"}, %Test.User{ email: "abc@def.com",
+        username: "harald" }) == %Test.User{ email: "abc@def.com",
+        username: "harald", id: "1" }
     end
   end
 end

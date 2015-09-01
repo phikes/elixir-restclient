@@ -45,6 +45,45 @@ defmodule RestClient do
       defstruct unquote(fields)
 
       @doc """
+        Creates a new record of the resource via a HTTP POST request to
+        http://apiurl.com/resources. The response is expected to be in JSON
+        and the default key is "data".
+
+        # Examples
+
+            defmodule Test do
+                api "http://test.com"
+            end
+
+            def Test.User do
+              resource Test, [:id, :username, :email]
+            end
+
+        `Test.User.create {"something", "pass123"}, %Test.User{ username: "Peter Pan", email: "peter@pan123.com"}`
+        will issue a HTTP POST request to `http://test.com/users` with the data
+        being form-urlencoded. Say that request returns
+
+            {
+              data: {
+                  id: 1,
+                  username: "Peter Pan",
+                  email: "peter@pan123.com"
+              }
+            }
+
+        `Test.User.create/2` will return a `%Test.User` struct according to that
+        data.
+      """
+      def create(auth, struct) do
+        HTTPotion.post("#{unquote(api).url}/#{path}", basic_auth: auth,
+          body: struct_to_post_body(struct), headers: [
+            "Content-type": "application/x-www-form-urlencoded"
+          ]).body
+          |> Poison.decode!(as: %{"data" => __MODULE__})
+          |> Map.get("data")
+      end
+
+      @doc """
         Deletes a record of the resource via a HTTP DELETE request to
         http://apiurl.com/resources/id. The response is expected to return a
         status code if 200, otherwise the method returns false.
@@ -110,6 +149,15 @@ defmodule RestClient do
         HTTPotion.get("#{unquote(api).url}/#{path}", basic_auth: auth).body
           |> Poison.decode!(as: %{"data" => [__MODULE__]})
           |> Map.get("data")
+      end
+
+      defp struct_to_post_body(struct) do
+        struct
+          |> Map.to_list
+          |> Keyword.delete(:__struct__)
+          |> Enum.reject(fn({k, v}) -> v == nil end)
+          |> Enum.map(fn({k, v}) -> "#{k}=#{v}" end)
+          |> Enum.join("&")
       end
 
       @doc """
