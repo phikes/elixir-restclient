@@ -45,6 +45,45 @@ defmodule RestClient do
       defstruct unquote(fields)
 
       @doc """
+        Updates an existing record of the resource via a HTTP PUT request to
+        http://apiurl.com/resources/id. The response is expected to be in JSON
+        and the default key is "data".
+
+        # Examples
+
+            defmodule Test do
+                api "http://test.com"
+            end
+
+            def Test.User do
+              resource Test, [:id, :username, :email]
+            end
+
+        `Test.User.update {"something", "pass123"}, "1", %Test.User{ username: "Peter Pan", email: "peter@pan123.com"}`
+        will issue a HTTP PUT request to `http://test.com/users/1` with the data
+        being form-urlencoded. Say that request returns
+
+            {
+              data: {
+                  id: 1,
+                  username: "Peter Pan",
+                  email: "peter@pan123.com"
+              }
+            }
+
+        `Test.User.update/3` will return a `%Test.User` struct according to that
+        data.
+      """
+      def update(auth, id, struct) do
+        HTTPotion.put("#{unquote(api).url}/#{path}/#{id}", basic_auth: auth,
+          body: struct_to_form_urlencoded(struct), headers: [
+            "Content-type": "application/x-www-form-urlencoded"
+          ]).body
+          |> Poison.decode!(as: %{"data" => __MODULE__})
+          |> Map.get("data")
+      end
+
+      @doc """
         Retrieves a record of the resource via a HTTP GET request to
         http://apiurl.com/resources/id. The response is expected to be in JSON
         and the default key is "data".
@@ -113,7 +152,7 @@ defmodule RestClient do
       """
       def create(auth, struct) do
         HTTPotion.post("#{unquote(api).url}/#{path}", basic_auth: auth,
-          body: struct_to_post_body(struct), headers: [
+          body: struct_to_form_urlencoded(struct), headers: [
             "Content-type": "application/x-www-form-urlencoded"
           ]).body
           |> Poison.decode!(as: %{"data" => __MODULE__})
@@ -188,7 +227,7 @@ defmodule RestClient do
           |> Map.get("data")
       end
 
-      defp struct_to_post_body(struct) do
+      defp struct_to_form_urlencoded(struct) do
         struct
           |> Map.to_list
           |> Keyword.delete(:__struct__)

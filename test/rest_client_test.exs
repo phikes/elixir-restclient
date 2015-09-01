@@ -21,7 +21,8 @@ defmodule RestClientTest do
       :ok,
       index: %{body: "{\"data\":[{\"id\":\"1\",\"email\":\"demo@test.com\",\"username\":\"Testkunde\"}],\"data_count\":\"1\"}"},
       create: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"},
-      show: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"}
+      show: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"abc@def.com\", \"username\": \"harald\"}}"},
+      update: %{body: "{\"data\":{\"id\":\"1\",\"email\":\"hanswurst@test.com\", \"username\": \"Petr\"}}"}
     }
   end
 
@@ -110,6 +111,32 @@ defmodule RestClientTest do
         id: "1",
         username: "harald",
         email: "abc@def.com"
+      }
+    end
+  end
+
+  test "update/3 makes the correct PUT request", %{update: response} do
+    with_mock HTTPotion, [put: fn(_, _) -> response end] do
+      Test.User.update {"user", "pass"}, "1", %Test.User{
+        email: "hanswurst@test.com", username: "Petr" }
+
+      assert called HTTPotion.put("http://test.com/users/1",
+        basic_auth: {"user", "pass"},
+        body: "email=hanswurst@test.com&username=Petr",
+        headers: [
+            "Content-type": "application/x-www-form-urlencoded"
+          ])
+    end
+  end
+
+  test "update/3 returns the updated record", %{update: response} do
+    with_mock HTTPotion, [put: fn(_, _) -> response end] do
+      Test.User.update({"user", "pass"}, "1", %Test.User{
+        email: "hanswurst@test.com", username: "Petr" })
+
+      assert Test.User.update({"user", "pass"}, "1", %Test.User{
+        email: "hanswurst@test.com", username: "Petr" }) == %Test.User{
+        email: "hanswurst@test.com", username: "Petr", id: "1"
       }
     end
   end
